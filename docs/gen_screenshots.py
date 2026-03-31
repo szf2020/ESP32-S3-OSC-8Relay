@@ -29,6 +29,7 @@ const fakeConfig = {
   apIp: "192.168.4.1",
   apGw: "192.168.4.1",
   apMask: "255.255.255.0",
+  apTimeoutMin: 5,
   relays: [
     {oscAddress: "/relay/1", invert: false, mode: 0},
     {oscAddress: "/relay/2", invert: false, mode: 0},
@@ -52,7 +53,8 @@ const fakeSystemStatus = {
   oscPort: 8000,
   apSsid: "ESP32-S3-OSC-8RELAY",
   relays: [true, false, true, false, true, false, false, true],
-  apClients: 1
+  apClients: 1,
+  apTimeoutMin: 5
 };
 
 const origFetch = window.fetch;
