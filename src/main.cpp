@@ -49,6 +49,31 @@ static unsigned long gLastWatchdogFeed = 0;
 static unsigned long gApLastClientSeen = 0;  // dernier moment avec client connecté
 static bool gApForcedOff = false;            // désactivé via OSC
 
+// 📨 OSC message log ring buffer
+static constexpr int OSC_LOG_SIZE = 20;
+struct OscLogEntry {
+  unsigned long ts;       // millis() timestamp
+  char address[48];
+  char typeTag[4];
+  char value[16];
+};
+static OscLogEntry gOscLog[OSC_LOG_SIZE];
+static int gOscLogHead = 0;
+static int gOscLogCount = 0;
+
+void recordOscMessage(const char* address, const char* typeTag, const char* valueStr) {
+  OscLogEntry& e = gOscLog[gOscLogHead];
+  e.ts = millis();
+  strncpy(e.address, address, sizeof(e.address) - 1);
+  e.address[sizeof(e.address) - 1] = 0;
+  strncpy(e.typeTag, typeTag, sizeof(e.typeTag) - 1);
+  e.typeTag[sizeof(e.typeTag) - 1] = 0;
+  strncpy(e.value, valueStr, sizeof(e.value) - 1);
+  e.value[sizeof(e.value) - 1] = 0;
+  gOscLogHead = (gOscLogHead + 1) % OSC_LOG_SIZE;
+  if (gOscLogCount < OSC_LOG_SIZE) gOscLogCount++;
+}
+
 // ========== FORWARD DECLARATIONS ==========
 void setupWebServer();
 void handleRelayCommand(uint8_t relayIdx, bool newState);
@@ -377,7 +402,26 @@ void setupWebServer() {
     gWeb.send(200, "application/json", response);
   });
 
-  // �🔄 API: POST /api/system/reboot - Redémarrer l'ESP32
+  // 📨 API: GET /api/osc/log - Derniers messages OSC reçus
+  gWeb.on("/api/osc/log", HTTP_GET, []() {
+    StaticJsonDocument<2048> doc;
+    JsonArray arr = doc.createNestedArray("messages");
+    // Iterate ring buffer from oldest to newest
+    int start = (gOscLogCount < OSC_LOG_SIZE) ? 0 : gOscLogHead;
+    for (int i = 0; i < gOscLogCount; i++) {
+      int idx = (start + i) % OSC_LOG_SIZE;
+      JsonObject msg = arr.createNestedObject();
+      msg["ts"] = gOscLog[idx].ts;
+      msg["addr"] = gOscLog[idx].address;
+      msg["type"] = gOscLog[idx].typeTag;
+      msg["val"] = gOscLog[idx].value;
+    }
+    String response;
+    serializeJson(doc, response);
+    gWeb.send(200, "application/json", response);
+  });
+
+  // 🔄 API: POST /api/system/reboot - Redémarrer l'ESP32
   gWeb.on("/api/system/reboot", HTTP_POST, []() {
     gWeb.send(200, "text/plain", "Rebooting...");
     delay(1000);
@@ -507,6 +551,7 @@ void setup() {
   LOG_INFO("OSC", "Starting OSC router on UDP port %d...", gCfg.oscListenPort);
   gOsc.begin(gCfg.oscListenPort, &gCfg, handleRelayCommand);
   gOsc.setSystemCallback(handleSystemOsc);
+  gOsc.setLogCallback(recordOscMessage);
   LOG_INFO("OSC", "OSC router ready to receive messages");
   WATCHDOG.feed();
 

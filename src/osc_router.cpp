@@ -87,6 +87,31 @@ bool OscRelayRouter::parseOscMessage(const uint8_t* data, size_t len) {
 
   if (tagsStart >= (int)len || data[tagsStart] != ',') return false;
 
+  // Extract type tag and value for logging
+  char typeTag[2] = {0, 0};
+  char valueStr[32] = "?";
+  if (tagsStart + 1 < (int)len) {
+    typeTag[0] = data[tagsStart + 1];
+    int dataPos = tagsStart + 1;
+    dataPos++;
+    while (dataPos % 4 != 0 && dataPos < (int)len) dataPos++;
+    if (typeTag[0] == 'i' && dataPos + 4 <= (int)len) {
+      int32_t v = (int32_t)((data[dataPos]<<24)|(data[dataPos+1]<<16)|(data[dataPos+2]<<8)|data[dataPos+3]);
+      snprintf(valueStr, sizeof(valueStr), "%d", v);
+    } else if (typeTag[0] == 'f' && dataPos + 4 <= (int)len) {
+      uint32_t raw = (data[dataPos]<<24)|(data[dataPos+1]<<16)|(data[dataPos+2]<<8)|data[dataPos+3];
+      float fv; memcpy(&fv, &raw, 4);
+      snprintf(valueStr, sizeof(valueStr), "%.2f", fv);
+    } else if (typeTag[0] == 'T') {
+      snprintf(valueStr, sizeof(valueStr), "True");
+    } else if (typeTag[0] == 'F') {
+      snprintf(valueStr, sizeof(valueStr), "False");
+    }
+  }
+
+  // Fire log callback for all parsed messages
+  if (_logCb) _logCb(address, typeTag, valueStr);
+
   // Check system commands (/ap)
   if (strncmp(address, "/ap", 3) == 0) {
     bool val = false;

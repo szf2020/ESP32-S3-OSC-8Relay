@@ -52,7 +52,10 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
 </head>
 <body>
   <header>
-    <h1>⚡ RelayOSC</h1>
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+      <h1 style="margin:0;">⚡ RelayOSC</h1>
+      <div id="oscTicker" style="flex:1; min-width:200px; font-family:monospace; font-size:11px; color:#58a6ff; background:#0d1117; border:1px solid #30363d; border-radius:6px; padding:6px 10px; max-height:60px; overflow-y:auto; white-space:pre; line-height:1.3;">En attente OSC...</div>
+    </div>
     <div id="statusLog" style="font-family:monospace; font-size:11px; color:#3fb950; margin-top:8px; background:#0d1117; border:1px solid #30363d; border-radius:6px; padding:8px 12px; max-height:150px; overflow-y:auto; white-space:pre; line-height:1.4;">Connexion...</div>
   </header>
 
@@ -552,14 +555,45 @@ v1.0.0 - Janvier 2025
       }
     }
 
+    // OSC message ticker in header
+    var lastOscTs = 0;
+    async function updateOscTicker() {
+      try {
+        const resp = await fetch(`${API_BASE}/osc/log`);
+        const data = await resp.json();
+        const el = document.getElementById('oscTicker');
+        const msgs = data.messages;
+        if (!msgs || msgs.length === 0) return;
+        // Only show new messages (ts > lastOscTs)
+        var newMsgs = msgs.filter(m => m.ts > lastOscTs);
+        if (newMsgs.length === 0) return;
+        lastOscTs = msgs[msgs.length - 1].ts;
+        var lines = el.textContent === 'En attente OSC...' ? [] : el.textContent.split('\n');
+        newMsgs.forEach(m => {
+          var sec = Math.floor(m.ts / 1000);
+          var h = Math.floor(sec / 3600) % 24;
+          var mn = Math.floor(sec / 60) % 60;
+          var s = sec % 60;
+          var t = String(h).padStart(2,'0') + ':' + String(mn).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+          lines.push('[' + t + '] ' + m.addr + ' (' + m.type + ') = ' + m.val);
+        });
+        if (lines.length > 30) lines = lines.slice(-30);
+        el.textContent = lines.join('\n');
+        el.style.color = '#58a6ff';
+        el.scrollTop = el.scrollHeight;
+      } catch(e) {}
+    }
+
     // Initial load
     loadConfig();
     updateStatusLog();
+    updateOscTicker();
     updateWifiQR();
     document.getElementById('apSsid').addEventListener('input', updateWifiQR);
     document.getElementById('apPass').addEventListener('input', updateWifiQR);
     setInterval(updateRelayStatus, 2000);
     setInterval(updateStatusLog, 3000);
+    setInterval(updateOscTicker, 1000);
   </script>
 </body>
 </html>)HTML";
