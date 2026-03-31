@@ -2,6 +2,7 @@
 #include <SPI.h>
 #include <WiFi.h>
 #include <WebServer.h>
+#include <DNSServer.h>
 #include <ArduinoJson.h>
 
 #include "config.h"
@@ -30,6 +31,7 @@ static AppCfg gCfg;
 static WebServer gWeb(80);
 static PCA9554 gRelayExpander(0x20);
 static OscRelayRouter gOsc;
+static DNSServer gDns;
 
 // 🔒 MUTEX PROTECTION : Protège l'accès concurrent aux relais
 // Raison : Le thread Web ET le thread OSC accèdent à gRelayLogical simultanément
@@ -191,11 +193,62 @@ void setupWebServer() {
     gWeb.send(200, "text/html", INDEX_HTML);
   });
 
-  // Log 404
+  // 🌐 Captive Portal detection routes
+  // Apple iOS/macOS
+  gWeb.on("/hotspot-detect.html", []() {
+    LOG_INFO("WEB", "🌐 Captive portal (Apple) from %s", gWeb.client().remoteIP().toString().c_str());
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
+  });
+  // Android
+  gWeb.on("/generate_204", []() {
+    LOG_INFO("WEB", "🌐 Captive portal (Android) from %s", gWeb.client().remoteIP().toString().c_str());
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
+  });
+  gWeb.on("/gen_204", []() {
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
+  });
+  // Windows
+  gWeb.on("/connecttest.txt", []() {
+    LOG_INFO("WEB", "🌐 Captive portal (Windows) from %s", gWeb.client().remoteIP().toString().c_str());
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
+  });
+  gWeb.on("/ncsi.txt", []() {
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
+  });
+  gWeb.on("/redirect", []() {
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
+  });
+  // Firefox
+  gWeb.on("/success.txt", []() {
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
+  });
+  // Microsoft NCSI
+  gWeb.on("/fwlink", []() {
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
+  });
+
+  // Redirect all unknown non-API requests to main page (captive portal fallback)
   gWeb.onNotFound([]() {
-    LOG_WARN("WEB", "🔴 404 Not Found: %s from %s", 
-      gWeb.uri().c_str(), gWeb.client().remoteIP().toString().c_str());
-    gWeb.send(404, "text/plain", "Not Found");
+    String uri = gWeb.uri();
+    // Don't redirect API calls — return 404 for those
+    if (uri.startsWith("/api/")) {
+      LOG_WARN("WEB", "🔴 404 Not Found: %s from %s", 
+        uri.c_str(), gWeb.client().remoteIP().toString().c_str());
+      gWeb.send(404, "text/plain", "Not Found");
+      return;
+    }
+    LOG_INFO("WEB", "🌐 Captive redirect: %s from %s", 
+      uri.c_str(), gWeb.client().remoteIP().toString().c_str());
+    gWeb.sendHeader("Location", "http://192.168.4.1/");
+    gWeb.send(302, "text/plain", "");
   });
 
   // 🔧 API: GET /api/config - Retourner la configuration complète en JSON
@@ -533,6 +586,11 @@ void setup() {
 
   // Démarrer l'AP WiFi pour servir l'interface Web (Ethernet reste dédié à l'OSC)
   NETMGR.startWiFiAP(&gCfg);
+
+  // 🌐 Captive Portal DNS : redirige toutes les requêtes DNS vers l'IP de l'AP
+  // Cela déclenche automatiquement le popup captive portal sur iOS/Android/Windows
+  gDns.start(53, "*", WiFi.softAPIP());
+  LOG_INFO("DNS", "Captive portal DNS started → %s", WiFi.softAPIP().toString().c_str());
   
   // Synchroniser les variables globales avec NetworkManager
   gEthLinked = NETMGR.isEthernetConnected();
@@ -588,6 +646,9 @@ void loop() {
 
   // 🌐 WEB SERVER HANDLING (serveur synchrone - nécessite handleClient())
   gWeb.handleClient();
+
+  // 🌐 DNS captive portal processing
+  gDns.processNextRequest();
 
   // � AP AUTO-MANAGEMENT (vérifier toutes les 5 secondes)
   if (!gApForcedOff && now - gLastStatusUpdate >= 5000) {

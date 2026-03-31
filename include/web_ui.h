@@ -217,7 +217,7 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
       <div class="card">
         <h2>📝 Changelog</h2>
         <pre style="background: #0d1117; padding: 12px; border-radius: 6px; font-size: 12px; overflow: auto; max-height: 300px;">
-v1.1.0 - Juin 2025
+v1.1.0 - Mars 2026
 - Log unifié temps réel : messages système (vert) + OSC entrants (bleu) fusionnés dans le header
 - Affichage des messages OSC entrants avec adresse, type tag et valeur
 - QR code WiFi (qrcode-generator v1.4.4) dans l'onglet Réseau
@@ -230,7 +230,7 @@ v1.1.0 - Juin 2025
 - Endpoint /api/system/status + /api/osc/log
 - Fix générateur QR code (remplacement par lib Kazuhiko Arase)
 
-v1.0.0 - Janvier 2025
+v1.0.0 - Janvier 2026
 - Interface Web complète
 - Contrôle des 8 relais via OSC
 - Configuration Ethernet (DHCP/statique)
