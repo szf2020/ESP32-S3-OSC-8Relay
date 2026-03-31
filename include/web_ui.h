@@ -53,7 +53,7 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
 <body>
   <header>
     <h1>⚡ RelayOSC</h1>
-    <p class="status">ESP32-S3-ETH-8DI-8RO | <span id="deviceStatus">Connexion...</span></p>
+    <div id="statusLog" style="font-family:monospace; font-size:11px; color:#3fb950; margin-top:8px; background:#0d1117; border:1px solid #30363d; border-radius:6px; padding:8px 12px; max-height:150px; overflow-y:auto; white-space:pre; line-height:1.4;">Connexion...</div>
   </header>
 
   <main>
@@ -461,9 +461,42 @@ v1.0.0 - Janvier 2025
       }
     });
 
+    const MAX_LOG_LINES = 50;
+
+    // Verbose status log in header (scrolling multi-line)
+    async function updateStatusLog() {
+      const el = document.getElementById('statusLog');
+      try {
+        const resp = await fetch(`${API_BASE}/system/status`);
+        const s = await resp.json();
+        const relayStr = s.relays.map((v,i) => `R${i+1}:${v?'\x1b[32mON\x1b[0m':'OFF'}`).join(' ');
+        const heap = (s.freeHeap/1024).toFixed(0);
+        const heapMin = (s.minFreeHeap/1024).toFixed(0);
+        const now = new Date().toLocaleTimeString('fr-FR');
+        const line = `[${now}] uptime=${s.uptime} ETH=${s.ethConnected?'✓':'✗'} IP=${s.ethIp} | AP=${s.wifiApActive?'UP':'DOWN'} SSID=${s.apSsid} Clients=${s.apClients} | OSC:${s.oscPort} | RAM=${heap}K (min:${heapMin}K) | ${relayStr}`;
+        // Append new line, keep max lines
+        let lines = el.textContent === 'Connexion...' ? [] : el.textContent.split('\n');
+        lines.push(line);
+        if (lines.length > MAX_LOG_LINES) lines = lines.slice(-MAX_LOG_LINES);
+        el.textContent = lines.join('\n');
+        el.style.color = s.ethConnected ? '#3fb950' : '#f85149';
+        el.scrollTop = el.scrollHeight;
+      } catch (e) {
+        let lines = el.textContent === 'Connexion...' ? [] : el.textContent.split('\n');
+        const now = new Date().toLocaleTimeString('fr-FR');
+        lines.push(`[${now}] ⚠ Connexion perdue...`);
+        if (lines.length > MAX_LOG_LINES) lines = lines.slice(-MAX_LOG_LINES);
+        el.textContent = lines.join('\n');
+        el.style.color = '#f85149';
+        el.scrollTop = el.scrollHeight;
+      }
+    }
+
     // Initial load
     loadConfig();
+    updateStatusLog();
     setInterval(updateRelayStatus, 2000);
+    setInterval(updateStatusLog, 3000);
   </script>
 </body>
 </html>)HTML";
