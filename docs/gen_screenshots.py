@@ -41,10 +41,24 @@ const fakeConfig = {
   ]
 };
 const fakeStatus = [true, false, true, false, true, false, false, true];
+const fakeSystemStatus = {
+  uptime: "0d 01:23:45",
+  ethConnected: true,
+  ethIp: "192.168.0.1",
+  wifiApActive: true,
+  wifiApIp: "192.168.4.1",
+  freeHeap: 281344,
+  minFreeHeap: 265000,
+  oscPort: 8000,
+  apSsid: "ESP32-S3-OSC-8RELAY",
+  relays: [true, false, true, false, true, false, false, true],
+  apClients: 1
+};
 
 const origFetch = window.fetch;
 window.fetch = async function(url, opts) {
   if (typeof url === 'string') {
+    if (url.includes('/api/system/status')) return new Response(JSON.stringify(fakeSystemStatus), {status: 200});
     if (url.includes('/api/config')) return new Response(JSON.stringify(fakeConfig), {status: 200});
     if (url.includes('/api/relays/status')) return new Response(JSON.stringify(fakeStatus), {status: 200});
     if (url.includes('/api/relays/')) return new Response('{}', {status: 200});

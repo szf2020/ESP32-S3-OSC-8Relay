@@ -9,7 +9,9 @@ Firmware pour la carte **Waveshare ESP32-S3-ETH-8DI-8RO** permettant de piloter 
 ## 📋 Fonctionnalités
 
 - **8 relais** contrôlables via OSC (UDP) sur Ethernet W5500
+- **ALL ON / ALL OFF** : boutons web + commande OSC `/relay/all`
 - **Interface Web** complète accessible via Wi-Fi AP (point d'accès)
+- **Log verbose temps réel** dans le header web (uptime, ETH, RAM, relais...)
 - **Deux réseaux séparés** : Ethernet pour l'OSC, Wi-Fi pour la configuration
 - **Persistance** : configuration et état des relais sauvegardés en flash (NVS)
 - **Modes de relais** : Latch (valeur directe ON/OFF) ou Toggle (basculement)
@@ -125,6 +127,8 @@ Contrôle en temps réel des 8 relais et configuration des adresses OSC par rela
 ![Onglet Relais & OSC](docs/screenshots/tab_relays.png)
 
 - **Boutons ON/OFF** : contrôle direct de chaque relais
+- **ALL ON / ALL OFF** : active ou désactive les 8 relais d'un coup
+- **Log verbose** : bandeau défilant en haut affichant uptime, état réseau, RAM, relais
 - **Adresse OSC** : chemin OSC personnalisable (ex: `/relay/1`, `/scene/light/3`)
 - **Inverser logique** : inverse l'état physique du relais
 - **Mode** : Latch (valeur directe) ou Toggle (basculement à chaque impulsion)
@@ -168,8 +172,9 @@ Informations système, redémarrage et réinitialisation usine.
 | Relais 6 | `/relay/6` |
 | Relais 7 | `/relay/7` |
 | Relais 8 | `/relay/8` |
+| **Tous** | **`/relay/all`** |
 
-> Les adresses sont personnalisables via l'interface Web.
+> Les adresses individuelles sont personnalisables via l'interface Web.
 
 ### Types de données acceptés
 
@@ -198,6 +203,12 @@ oscsend 192.168.0.1 8000 /relay/1 i 1
 # Éteindre le relais 1
 oscsend 192.168.0.1 8000 /relay/1 i 0
 
+# Allumer tous les relais
+oscsend 192.168.0.1 8000 /relay/all i 1
+
+# Éteindre tous les relais
+oscsend 192.168.0.1 8000 /relay/all i 0
+
 # Toggle le relais 4
 oscsend 192.168.0.1 8000 /relay/4 f 1.0
 ```
@@ -213,6 +224,12 @@ client.send_message("/relay/3", 1)
 
 # Éteindre le relais 3
 client.send_message("/relay/3", 0)
+
+# Allumer tous les relais
+client.send_message("/relay/all", 1)
+
+# Éteindre tous les relais
+client.send_message("/relay/all", 0)
 ```
 
 #### Logiciels compatibles
@@ -237,11 +254,13 @@ L'interface Web utilise une API REST accessible sur le Wi-Fi AP (`http://192.168
 | `GET` | `/api/config` | Configuration complète (JSON) |
 | `GET` | `/api/relays/status` | État des 8 relais `[true, false, ...]` |
 | `POST` | `/api/relays/{n}` | Changer l'état du relais n (`{"state": true}`) |
+| `POST` | `/api/relays/all` | ALL ON/OFF (`{"state": true}` ou `false`) |
 | `POST` | `/api/config/relays` | Sauvegarder la config des relais |
 | `POST` | `/api/config/network` | Sauvegarder la config réseau |
 | `POST` | `/api/config/ap` | Sauvegarder la config Wi-Fi AP |
 | `POST` | `/api/system/reboot` | Redémarrer l'ESP32 |
 | `POST` | `/api/system/factoryreset` | Réinitialisation usine |
+| `GET` | `/api/system/status` | État système (uptime, RAM, ETH, relais...) |
 
 ### Exemple avec `curl`
 
@@ -256,6 +275,14 @@ curl http://192.168.4.1/api/relays/status
 curl -X POST http://192.168.4.1/api/relays/0 \
   -H "Content-Type: application/json" \
   -d '{"state": true}'
+
+# Allumer tous les relais
+curl -X POST http://192.168.4.1/api/relays/all \
+  -H "Content-Type: application/json" \
+  -d '{"state": true}'
+
+# État système
+curl http://192.168.4.1/api/system/status
 ```
 
 ---
