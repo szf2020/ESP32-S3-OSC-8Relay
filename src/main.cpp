@@ -181,6 +181,10 @@ void handleSystemOsc(const char* address, bool value) {
         LOG_INFO("OSC", "📡 AP disabled via OSC");
       }
     }
+  } else if (strcmp(address, "/reboot") == 0 && value) {
+    LOG_INFO("OSC", "🔄 Reboot requested via OSC");
+    delay(200);
+    ESP.restart();
   }
 }
 
@@ -675,26 +679,21 @@ void loop() {
   // �📊 STATUS UPDATE (toutes les 5 secondes)
   // Afficher l'état du système pour diagnostic
   if (now - gLastStatusUpdate >= 5000) {
-    try {
-      // Sync network state from NetworkManager
-      gEthLinked = NETMGR.isEthernetConnected();
-      gEthIp = NETMGR.getEthernetIP();
-      gWiFiApActive = NETMGR.isWiFiAPActive();
-      
-      LOG_INFO("STATUS",
-        "ETH=%s IP=%s WiFiAP=%s RAM_free=%u bytes Relays=%d-%d-%d-%d-%d-%d-%d-%d",
-        gEthLinked ? "✓" : "✗",
-        gEthIp.toString().c_str(),
-        gWiFiApActive ? "UP" : "DOWN",
-        ESP.getFreeHeap(),
-        gRelayLogical[0], gRelayLogical[1], gRelayLogical[2], gRelayLogical[3],
-        gRelayLogical[4], gRelayLogical[5], gRelayLogical[6], gRelayLogical[7]
-      );
-      gLastStatusUpdate = now;
-    } catch (...) {
-      LOG_ERROR("STATUS", "❌ Exception in STATUS update!");
-      LedStatus::error();
-    }
+    // Sync network state from NetworkManager
+    gEthLinked = NETMGR.isEthernetConnected();
+    gEthIp = NETMGR.getEthernetIP();
+    gWiFiApActive = NETMGR.isWiFiAPActive();
+    
+    LOG_INFO("STATUS",
+      "ETH=%s IP=%s WiFiAP=%s RAM_free=%u bytes Relays=%d-%d-%d-%d-%d-%d-%d-%d",
+      gEthLinked ? "✓" : "✗",
+      gEthIp.toString().c_str(),
+      gWiFiApActive ? "UP" : "DOWN",
+      ESP.getFreeHeap(),
+      gRelayLogical[0], gRelayLogical[1], gRelayLogical[2], gRelayLogical[3],
+      gRelayLogical[4], gRelayLogical[5], gRelayLogical[6], gRelayLogical[7]
+    );
+    gLastStatusUpdate = now;
   }
 
   // Petite pause pour céder au scheduler FreeRTOS (yield sans bloquer)

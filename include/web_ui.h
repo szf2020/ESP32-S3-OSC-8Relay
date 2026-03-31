@@ -217,6 +217,12 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
       <div class="card">
         <h2>📝 Changelog</h2>
         <pre style="background: #0d1117; padding: 12px; border-radius: 6px; font-size: 12px; overflow: auto; max-height: 300px;">
+v1.2.1 - Mars 2026
+- Commande OSC /reboot : redémarrage à distance via OSC
+- Fix LED RGB : correction ordre couleurs (NEO_GRB → NEO_RGB) pour carte Waveshare
+- Fix LED rouge permanente : suppression try/catch parasite dans la boucle status
+- Tests OSC complets : 52 tests validés (relais i/f/T/F, /relay/all, /ap, /reboot)
+
 v1.2.0 - Mars 2026
 - Optimisation latence OSC : boucle prioritaire sans throttle
 - Drain complet des paquets UDP par cycle (multi-packet par pass)

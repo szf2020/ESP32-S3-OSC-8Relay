@@ -2,7 +2,7 @@
 #include <Adafruit_NeoPixel.h>
 
 namespace {
-  Adafruit_NeoPixel strip(1, 38, NEO_GRB + NEO_KHZ800);
+  Adafruit_NeoPixel strip(1, 38, NEO_RGB + NEO_KHZ800);
   uint8_t ledPin = 38;
 }
 
@@ -10,7 +10,7 @@ namespace LedStatus {
   void begin(uint8_t pin, uint8_t brightness) {
     ledPin = pin;
     strip.setPin(ledPin);
-    strip.updateType(NEO_GRB + NEO_KHZ800);
+    strip.updateType(NEO_RGB + NEO_KHZ800);
     strip.updateLength(1);
     strip.begin();
     strip.setBrightness(brightness);

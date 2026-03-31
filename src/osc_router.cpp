@@ -112,8 +112,8 @@ bool OscRelayRouter::parseOscMessage(const uint8_t* data, size_t len) {
   // Fire log callback for all parsed messages (AFTER routing for lower latency)
   // Moved below relay dispatch to not delay relay actuation
 
-  // Check system commands (/ap)
-  if (strncmp(address, "/ap", 3) == 0) {
+  // Check system commands (/ap, /reboot)
+  if (strncmp(address, "/ap", 3) == 0 || strcmp(address, "/reboot") == 0) {
     bool val = false;
     if (extractBoolValue(data, len, tagsStart, val)) {
       LOG_OSC("OSC", "System command: %s -> %d", address, val);
