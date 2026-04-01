@@ -62,8 +62,8 @@ const fakeLive = {
 };
 
 const fakeChangelog = [
-  {tag_name:"v1.2.6",name:"Changelog lié aux GitHub Releases",html_url:"https://github.com/NeOdYmS/ESP32-S3-OSC-8Relay/releases/tag/v1.2.6",published_at:"2026-04-01T00:00:00Z",body:"### Améliorations UI\n- Changelog synchronisé avec GitHub Releases\n- Fallback firmware embarqué si hors ligne"},
-  {tag_name:"v1.2.5",name:"Drapeaux langue + portail captif dynamique",html_url:"https://github.com/NeOdYmS/ESP32-S3-OSC-8Relay/releases/tag/v1.2.5",published_at:"2026-04-01T00:00:00Z",body:"### Améliorations UI\n- Sélecteur langue remplacé par boutons drapeaux 🇫🇷🇬🇧🇪🇸🇩🇪🇨🇳\n- Portail captif : redirections dynamiques\n### Robustesse API\n- Validation JSON sur tous les endpoints POST"}
+  {tag_name:"v1.2.6",name:"Changelog lie aux GitHub Releases",html_url:"https://github.com/NeOdYmS/ESP32-S3-OSC-8Relay/releases/tag/v1.2.6",published_at:"2026-04-01T00:00:00Z",body:"### Ameliorations UI\\n- Changelog synchronise avec GitHub Releases\\n- Fallback firmware embarque si hors ligne"},
+  {tag_name:"v1.2.5",name:"Drapeaux langue + portail captif dynamique",html_url:"https://github.com/NeOdYmS/ESP32-S3-OSC-8Relay/releases/tag/v1.2.5",published_at:"2026-04-01T00:00:00Z",body:"### Ameliorations UI\\n- Selecteur langue remplace par boutons drapeaux\\n- Portail captif : redirections dynamiques\\n### Robustesse API\\n- Validation JSON sur tous les endpoints POST"}
 ];
 const origFetch = window.fetch;
 window.fetch = async function(url, opts) {
@@ -92,13 +92,63 @@ tabs = {
 with sync_playwright() as p:
     browser = p.chromium.launch()
     page = browser.new_page(viewport={"width": 1280, "height": 900})
+
+    errors = []
+    page.on("console", lambda msg: errors.append(f"[{msg.type}] {msg.text}") if msg.type in ("error","warning") else None)
+    page.on("pageerror", lambda e: errors.append(f"[pageerror] {e}"))
+
     page.goto(f"file://{tmp_html}")
-    page.wait_for_timeout(1500)  # let JS load
+    page.wait_for_timeout(2500)
+
+    # Force populate relay grids via evaluate (bypasses any timing issue with loadConfig)
+    page.evaluate("""() => {
+      const fakeRelays = [
+        {oscAddress:'/relay/1',invert:false,mode:0},{oscAddress:'/relay/2',invert:false,mode:0},
+        {oscAddress:'/relay/3',invert:true, mode:0},{oscAddress:'/relay/4',invert:false,mode:1},
+        {oscAddress:'/relay/5',invert:false,mode:0},{oscAddress:'/relay/6',invert:false,mode:0},
+        {oscAddress:'/relay/7',invert:false,mode:0},{oscAddress:'/relay/8',invert:false,mode:0}
+      ];
+      const states = [1,0,1,0,1,0,0,1];
+      const ctrlGrid = document.getElementById('relayControlGrid');
+      const cfgGrid  = document.getElementById('relayCfgGrid');
+      if (ctrlGrid) ctrlGrid.innerHTML = '';
+      if (cfgGrid)  cfgGrid.innerHTML  = '';
+      for (let i = 0; i < 8; i++) {
+        const r = fakeRelays[i];
+        const on = !!states[i];
+        if (ctrlGrid) {
+          const d = document.createElement('div');
+          d.className = 'relay-card';
+          d.innerHTML = '<div class="relay-header"><span class="relay-name">Relay '+(i+1)+'</span>'
+            +'<span class="relay-status" id="relay-status-'+i+'">'+(on?'ON':'OFF')+'</span></div>'
+            +'<button class="relay-btn '+(on?'on':'off')+'" id="relay-btn-'+i+'">'+(on?'ON':'OFF')+'</button>';
+          ctrlGrid.appendChild(d);
+        }
+        if (cfgGrid) {
+          const c = document.createElement('div');
+          c.className = 'relay-card';
+          c.innerHTML = '<div class="relay-header"><span class="relay-name">Relay '+(i+1)+'</span></div>'
+            +'<div class="form-group" style="margin:0"><label>OSC Address</label>'
+            +'<input value="'+r.oscAddress+'"></div>'
+            +'<div class="form-group" style="margin:8px 0 0 0"><label class="checkbox-label">'
+            +'<input type="checkbox"'+(r.invert?' checked':'')+'><span>Invert logic</span></label></div>'
+            +'<div class="form-group" style="margin:8px 0 0 0"><label>Mode</label>'
+            +'<select><option value="0"'+(r.mode===0?' selected':'')+'">Latch</option>'
+            +'<option value="1"'+(r.mode===1?' selected':'')+'>Toggle</option></select></div>';
+          cfgGrid.appendChild(c);
+        }
+      }
+    }""")
+    page.wait_for_timeout(300)
+
+    if errors:
+        print("  ⚠ JS errors captured:")
+        for e in errors[:10]:
+            print("   ", e)
 
     for fname, tab_id in tabs.items():
-        # Click the tab
         page.click(f'button[data-tab="{tab_id}"]')
-        page.wait_for_timeout(500)
+        page.wait_for_timeout(1200)
         page.screenshot(path=str(OUT / f"{fname}.png"), full_page=True)
         print(f"  ✅ {fname}.png")
 
