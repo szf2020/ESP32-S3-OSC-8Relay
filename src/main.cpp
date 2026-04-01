@@ -500,16 +500,11 @@ void setupWebServer() {
 
     gStore.save(gCfg);
 
-    // Répondre AVANT de toucher à l'AP (la connexion TCP doit rester ouverte)
-    if (NETMGR.isWiFiAPActive()) {
-      gApReloadPending = true;
-      gApReloadTime = millis();
-      LOG_INFO("WEB", "WiFi AP reload scheduled (SSID=%s)", gCfg.apSsid);
-      gWeb.send(200, "text/plain", "OK_RELOADED");
-    } else {
-      LOG_INFO("WEB", "WiFi AP config saved (AP inactive, takes effect on next start)");
-      gWeb.send(200, "text/plain", "OK");
-    }
+    // Reboot différé pour appliquer le nouveau SSID proprement
+    gRebootPending = true;
+    gPendingActionTime = millis();
+    LOG_INFO("WEB", "WiFi AP config saved, rebooting (SSID=%s)", gCfg.apSsid);
+    gWeb.send(200, "text/plain", "OK_REBOOT");
   });
 
   // � API: GET /api/system/status - État système verbose

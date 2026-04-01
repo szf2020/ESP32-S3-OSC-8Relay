@@ -608,8 +608,8 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
         });
         if (resp.ok) {
           const txt = await resp.text();
-          if (txt === 'OK_RELOADED') {
-            showMessage('saveApMsg', '✓ ' + t('ap_saved') + ' — AP redémarré');
+          if (txt === 'OK_REBOOT') {
+            showMessage('saveApMsg', '✓ ' + t('net_saved_reboot'));
           } else {
             showMessage('saveApMsg', '✓ ' + t('ap_saved'));
           }
