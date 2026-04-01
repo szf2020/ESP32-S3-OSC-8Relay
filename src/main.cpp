@@ -475,9 +475,19 @@ void setupWebServer() {
     gCfg.apTimeoutMin = doc["apTimeoutMin"] | 5;
 
     gStore.save(gCfg);
-    gWeb.send(200, "text/plain", "OK");
-    
-    LOG_INFO("WEB", "WiFi AP config updated");
+
+    // Hot-reload AP si actif : arrêt + redémarrage immédiat avec nouvelles valeurs
+    if (NETMGR.isWiFiAPActive()) {
+      NETMGR.stopWiFiAP();
+      delay(200);
+      NETMGR.startWiFiAP(&gCfg);
+      gApLastClientSeen = millis();
+      LOG_INFO("WEB", "WiFi AP restarted with new config (SSID=%s)", gCfg.apSsid);
+      gWeb.send(200, "text/plain", "OK_RELOADED");
+    } else {
+      LOG_INFO("WEB", "WiFi AP config saved (AP inactive, takes effect on next start)");
+      gWeb.send(200, "text/plain", "OK");
+    }
   });
 
   // � API: GET /api/system/status - État système verbose

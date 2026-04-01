@@ -602,7 +602,12 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
           body: JSON.stringify(cfg)
         });
         if (resp.ok) {
-          showMessage('saveApMsg', '✓ ' + t('ap_saved'));
+          const txt = await resp.text();
+          if (txt === 'OK_RELOADED') {
+            showMessage('saveApMsg', '✓ ' + t('ap_saved') + ' — AP redémarré');
+          } else {
+            showMessage('saveApMsg', '✓ ' + t('ap_saved'));
+          }
         } else {
           showMessage('saveApMsg', '✗ ' + t('save_error'), true);
         }
