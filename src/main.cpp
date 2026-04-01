@@ -441,23 +441,19 @@ void setupWebServer() {
     }
 
     gStore.save(gCfg);
-    gWeb.send(200, "text/plain", "OK");
-    
-    LOG_INFO("WEB", "Network config updated (restart required)");
+    // Reboot différé : les changements Ethernet/OSC ne peuvent prendre effet qu'après reboot
+    gRebootPending = true;
+    gPendingActionTime = millis();
+    gWeb.send(200, "text/plain", "OK_REBOOT");
+    LOG_INFO("WEB", "Network config saved — reboot scheduled");
   });
 
-  // 🔄 API: POST /api/config/network/reload - RECHARGEMENT RÉSEAU SANS REBOOT
-  // ✨ Nouvelle fonctionnalité ! Permet de changer l'IP sans redémarrer
+  // Endpoint /reload conservé pour compatibilité mais déclenche aussi un reboot
   gWeb.on("/api/config/network/reload", HTTP_POST, []() {
-    gWeb.send(200, "text/plain", "Reloading network...");
-    
-    // Donner le temps au client de recevoir la réponse
-    delay(500);
-    
-    // Recharger la config réseau (dans NetworkManager)
-    NETMGR.hotReloadNetwork(&gCfg);
-    
-    LOG_WARN("WEB", "Network hot-reloaded");
+    gRebootPending = true;
+    gPendingActionTime = millis();
+    gWeb.send(200, "text/plain", "OK_REBOOT");
+    LOG_WARN("WEB", "Network reload (reboot scheduled)");
   });
 
   // 📡 API: POST /api/config/ap - Sauvegarder config WiFi AP
