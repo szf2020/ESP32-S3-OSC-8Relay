@@ -516,6 +516,10 @@ void setupWebServer() {
     doc["uptime"] = uptime;
     doc["ethConnected"] = NETMGR.isEthernetConnected();
     doc["ethIp"] = NETMGR.getEthernetIP().toString();
+    doc["ethMask"] = NETMGR.getEthernetMask().toString();
+    doc["ethGw"] = NETMGR.getEthernetGw().toString();
+    doc["ethDns1"] = NETMGR.getEthernetDns1().toString();
+    doc["ethDns2"] = NETMGR.getEthernetDns2().toString();
     doc["wifiApActive"] = NETMGR.isWiFiAPActive();
     doc["wifiApIp"] = WiFi.softAPIP().toString();
     doc["freeHeap"] = ESP.getFreeHeap();
@@ -586,12 +590,16 @@ void setupWebServer() {
     unsigned long sec = millis() / 1000;
     len += snprintf(buf + len, sizeof(buf) - len,
       "\"up\":%lu,\"heap\":%u,\"hmin\":%u,"
-      "\"eth\":%s,\"eip\":\"%s\","
+      "\"eth\":%s,\"eip\":\"%s\",\"eMask\":\"%s\",\"eGw\":\"%s\",\"eDns1\":\"%s\",\"eDns2\":\"%s\","
       "\"ap\":%s,\"aip\":\"%s\",\"acl\":%d,"
       "\"t\":%.1f,\"oP\":%u,\"aSsid\":\"%s\",\"aTo\":%u,",
       sec, ESP.getFreeHeap(), ESP.getMinFreeHeap(),
       NETMGR.isEthernetConnected() ? "true" : "false",
       NETMGR.getEthernetIP().toString().c_str(),
+      NETMGR.getEthernetMask().toString().c_str(),
+      NETMGR.getEthernetGw().toString().c_str(),
+      NETMGR.getEthernetDns1().toString().c_str(),
+      NETMGR.getEthernetDns2().toString().c_str(),
       NETMGR.isWiFiAPActive() ? "true" : "false",
       WiFi.softAPIP().toString().c_str(),
       WiFi.softAPgetStationNum(),

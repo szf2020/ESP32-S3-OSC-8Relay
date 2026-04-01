@@ -20,7 +20,11 @@ public:
 
   bool isEthernetConnected() const { return _ethConnected; }
   bool isWiFiAPActive() const { return _wifiApActive; }
-  IPAddress getEthernetIP() const { return _ethIp; }
+  IPAddress getEthernetIP()   const { return _ethIp; }
+  IPAddress getEthernetMask() const { return _ethMask; }
+  IPAddress getEthernetGw()   const { return _ethGw; }
+  IPAddress getEthernetDns1() const { return _ethDns1; }
+  IPAddress getEthernetDns2() const { return _ethDns2; }
   IPAddress getWiFiAPIP() const { return _wifiApIp; }
 
 private:
@@ -31,6 +35,10 @@ private:
   bool _ethConnected = false;
   bool _wifiApActive = false;
   IPAddress _ethIp;
+  IPAddress _ethMask;
+  IPAddress _ethGw;
+  IPAddress _ethDns1;
+  IPAddress _ethDns2;
   IPAddress _wifiApIp;
 };
 

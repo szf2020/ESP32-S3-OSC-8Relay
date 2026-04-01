@@ -540,7 +540,11 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
 
     // Save functions
     function updateEthStaticFields(dhcp) {
-      document.getElementById('ethStaticFields').classList.toggle('disabled', dhcp);
+      const wrap = document.getElementById('ethStaticFields');
+      wrap.classList.toggle('disabled', dhcp);
+      ['ethIp','ethMask','ethGw','ethDns1','ethDns2'].forEach(id => {
+        document.getElementById(id).readOnly = dhcp;
+      });
     }
 
     function showMessage(elemId, text, isError = false) {
@@ -811,6 +815,14 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
           document.getElementById('sysEthState').textContent = d.eth ? t('connected') : t('disconnected');
           document.getElementById('sysEthIp').textContent = d.eip;
           document.getElementById('sysOscPort').textContent = d.oP;
+          // Actualisation dynamique des champs Ethernet si DHCP actif
+          if (document.getElementById('ethDhcp') && document.getElementById('ethDhcp').checked) {
+            if (d.eip   && d.eip   !== '0.0.0.0') document.getElementById('ethIp').value   = d.eip;
+            if (d.eMask && d.eMask !== '0.0.0.0') document.getElementById('ethMask').value = d.eMask;
+            if (d.eGw   && d.eGw   !== '0.0.0.0') document.getElementById('ethGw').value   = d.eGw;
+            if (d.eDns1 && d.eDns1 !== '0.0.0.0') document.getElementById('ethDns1').value = d.eDns1;
+            if (d.eDns2 && d.eDns2 !== '0.0.0.0') document.getElementById('ethDns2').value = d.eDns2;
+          }
           document.getElementById('sysWifiState').textContent = d.ap ? t('ap_active') : t('ap_inactive');
           document.getElementById('sysWifiSsid').textContent = d.aSsid;
           document.getElementById('sysWifiIp').textContent = d.ap ? d.aip : '—';

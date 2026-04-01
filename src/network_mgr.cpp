@@ -100,12 +100,16 @@ void NetworkManager::startEthernet(const AppCfg* cfg) {
   }
   
   _ethConnected = true;
+  _ethMask = Ethernet.subnetMask();
+  _ethGw   = Ethernet.gatewayIP();
+  _ethDns1 = Ethernet.dnsServerIP();
+  _ethDns2 = cfg->eth.dhcp ? IPAddress(0,0,0,0) : cfg->eth.dns2;
   LOG_INFO("NET", "✅ W5500 Ethernet initialized");
   LOG_INFO("NET", "   MAC: %02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
   LOG_INFO("NET", "   IP: %s", _ethIp.toString().c_str());
-  LOG_INFO("NET", "   Mask: %s", Ethernet.subnetMask().toString().c_str());
-  LOG_INFO("NET", "   Gateway: %s", Ethernet.gatewayIP().toString().c_str());
-  LOG_INFO("NET", "   DNS: %s", Ethernet.dnsServerIP().toString().c_str());
+  LOG_INFO("NET", "   Mask: %s", _ethMask.toString().c_str());
+  LOG_INFO("NET", "   Gateway: %s", _ethGw.toString().c_str());
+  LOG_INFO("NET", "   DNS: %s", _ethDns1.toString().c_str());
 }
 
 void NetworkManager::startWiFiAP(const AppCfg* cfg) {
