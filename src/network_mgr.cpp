@@ -73,8 +73,8 @@ void NetworkManager::startEthernet(const AppCfg* cfg) {
   
   // Start Ethernet with static IP configuration
   if (cfg->eth.dhcp) {
-    LOG_INFO("NET", "Starting W5500 with DHCP...");
-    if (Ethernet.begin(mac) == 0) {
+    LOG_INFO("NET", "Starting W5500 with DHCP (timeout 6s)...");
+    if (Ethernet.begin(mac, 6000, 2000) == 0) {
       // Échec DHCP → fallback APIPA 169.254.mac[4].mac[5]
       uint8_t a = mac[4];  // 0xFE = 254
       uint8_t b = mac[5];  // dernier octet de l'IP statique configurée
