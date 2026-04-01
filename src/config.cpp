@@ -80,7 +80,7 @@ bool ConfigStore::load(AppCfg& out) {
   if (strlen(c.apSsid) == 0 || strcmp(c.apSsid, "RelayOSC") == 0) {
     strlcpy(c.apSsid, "ESP32-S3-OSC-8RELAY", sizeof(c.apSsid));
   }
-  if (strlen(c.apPass) < 8 || strcmp(c.apPass, "relayosc123") == 0) {
+  if (strcmp(c.apPass, "relayosc123") == 0) {
     strlcpy(c.apPass, "S3Relay!", sizeof(c.apPass));
   }
   if (prefs.getBytes("apIp", b, 4) > 0) c.apIp = bytesToIp(b);

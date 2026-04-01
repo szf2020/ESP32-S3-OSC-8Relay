@@ -51,6 +51,8 @@ static unsigned long gLastWatchdogFeed = 0;
 // AP timeout calculé dynamiquement depuis gCfg.apTimeoutMin
 static unsigned long gApLastClientSeen = 0;  // dernier moment avec client connecté
 static bool gApForcedOff = false;            // désactivé via OSC
+static bool gApReloadPending = false;        // hot-reload AP différé post-HTTP
+static unsigned long gApReloadTime = 0;
 
 // 📨 OSC message log ring buffer
 static constexpr int OSC_LOG_SIZE = 20;
@@ -475,13 +477,11 @@ void setupWebServer() {
 
     gStore.save(gCfg);
 
-    // Hot-reload AP si actif : arrêt + redémarrage immédiat avec nouvelles valeurs
+    // Répondre AVANT de toucher à l'AP (la connexion TCP doit rester ouverte)
     if (NETMGR.isWiFiAPActive()) {
-      NETMGR.stopWiFiAP();
-      delay(200);
-      NETMGR.startWiFiAP(&gCfg);
-      gApLastClientSeen = millis();
-      LOG_INFO("WEB", "WiFi AP restarted with new config (SSID=%s)", gCfg.apSsid);
+      gApReloadPending = true;
+      gApReloadTime = millis();
+      LOG_INFO("WEB", "WiFi AP reload scheduled (SSID=%s)", gCfg.apSsid);
       gWeb.send(200, "text/plain", "OK_RELOADED");
     } else {
       LOG_INFO("WEB", "WiFi AP config saved (AP inactive, takes effect on next start)");
@@ -750,7 +750,17 @@ void loop() {
   // Pas de throttle : chaque passage dans loop() vérifie les paquets UDP
   gOsc.loop();
 
-  // 💡 LED activity update (retour au vert après flash bleu OSC)
+  // � AP HOT-RELOAD différé (500ms après envoi HTTP pour laisser la réponse partir)
+  if (gApReloadPending && (now - gApReloadTime >= 500)) {
+    gApReloadPending = false;
+    NETMGR.stopWiFiAP();
+    delay(300);
+    NETMGR.startWiFiAP(&gCfg);
+    gApLastClientSeen = millis();
+    LOG_INFO("WEB", "WiFi AP reloaded: SSID=%s", gCfg.apSsid);
+  }
+
+  // �💡 LED activity update (retour au vert après flash bleu OSC)
   LedStatus::update();
 
   // 🔄 WATCHDOG FEED (toutes les 100ms)
