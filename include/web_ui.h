@@ -528,7 +528,7 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
       const el = document.getElementById(elemId);
       el.textContent = text;
       el.className = isError ? 'message error' : 'message success';
-      setTimeout(() => el.textContent = '', 3000);
+      setTimeout(() => { el.textContent = ''; el.className = ''; }, 3000);
     }
 
     document.getElementById('saveRelays').addEventListener('click', async () => {
@@ -587,21 +587,6 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
         }
       } catch (e) {
         showMessage('saveNetMsg', t('net_error'), true);
-      }
-    });
-
-    document.getElementById('apAllow').addEventListener('change', async function() {
-      try {
-        const resp = await fetch(`${API_BASE}/ap/toggle`, {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({active: this.checked})
-        });
-        if (resp.ok) {
-          showMessage('saveApMsg', this.checked ? '✓ AP activé' : '✓ AP désactivé');
-        }
-      } catch(e) {
-        showMessage('saveApMsg', t('net_error'), true);
       }
     });
 
