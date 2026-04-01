@@ -75,8 +75,6 @@ print("\n--- 5. /ap (WiFi AP control) ---")
 send("AP OFF",     "/ap",        "i", 0)
 time.sleep(1.0)
 send("AP ON",      "/ap",        "i", 1)
-time.sleep(0.5)
-send("AP enable",  "/ap/enable", "T")
 
 # ===== 6. Edge cases =====
 print("\n--- 6. Edge cases ---")

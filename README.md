@@ -217,7 +217,6 @@ Informations système en temps réel, redémarrage et réinitialisation usine.
 |---|---|---|
 | `/ap` | `1` | Allumer le point d'accès Wi-Fi |
 | `/ap` | `0` | Éteindre le point d'accès Wi-Fi |
-| `/ap/enable` | *(aucune)* | Allumer le point d'accès Wi-Fi |
 | `/reboot` | `1` | Redémarrer l'ESP32 |
 
 > L'AP s'éteint automatiquement après le **délai de mise en veille configuré** (5 min par défaut, configurable via l'interface Web, 0 = toujours actif). La commande `/ap 1` le rallume à tout moment.

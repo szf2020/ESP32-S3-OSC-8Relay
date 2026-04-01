@@ -173,7 +173,7 @@ void updateAllPhysicalRelays() {
 
 // ========== OSC SYSTEM COMMAND HANDLER ==========
 void handleSystemOsc(const char* address, bool value) {
-  if (strcmp(address, "/ap") == 0 || strcmp(address, "/ap/enable") == 0) {
+  if (strcmp(address, "/ap") == 0) {
     if (value) {
       // Allumer l'AP
       gApForcedOff = false;

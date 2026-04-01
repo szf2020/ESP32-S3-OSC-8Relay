@@ -11,7 +11,7 @@ Toutes les évolutions notables du projet sont documentées ici.
 **Commandes — 52/52 tests OK** (`test_osc_all.py --reboot`)
 - Relais individuels int32, float32, T/F tags (relais 1–8)
 - `/relay/all` (i/f/T/F)
-- `/ap` ON/OFF, `/ap/enable`
+- `/ap` ON/OFF, `/reboot`
 - Edge cases : val=42, val=-1, float=0.5, float=-0.1
 - Adresses inconnues silencieusement ignorées
 - `/reboot` OSC — redémarrage confirmé ✅
