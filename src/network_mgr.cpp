@@ -116,8 +116,8 @@ void NetworkManager::startWiFiAP(const AppCfg* cfg) {
   
   LOG_INFO("WiFi", "Starting WiFi AP...");
   WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(cfg->apIp, cfg->apGw, cfg->apMask);  // config IP AVANT softAP
   WiFi.softAP(cfg->apSsid, cfg->apPass);
-  WiFi.softAPConfig(cfg->apIp, cfg->apGw, cfg->apMask);
   
   _wifiApIp = WiFi.softAPIP();
   _wifiApActive = true;
@@ -129,6 +129,8 @@ void NetworkManager::stopWiFiAP() {
   if (!_wifiApActive) return;
   LOG_INFO("WiFi", "Stopping WiFi AP...");
   WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_OFF);   // reset complet du driver pour forcer reload du SSID
+  delay(100);
   WiFi.mode(WIFI_STA);
   _wifiApActive = false;
   LOG_INFO("WiFi", "AP stopped");
