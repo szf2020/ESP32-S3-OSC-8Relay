@@ -210,22 +210,20 @@ static const char INDEX_HTML[] PROGMEM = R"HTML(<!DOCTYPE html>
       <div class="card">
         <h2>🌐 <span data-i18n="eth_title">Ethernet (W5500)</span></h2>
 
-        <!-- Ligne DHCP + Hostname -->
-        <div class="grid-2" style="margin-bottom:12px;">
-          <div class="form-group" style="display:flex;flex-direction:column;justify-content:center;">
-            <div class="ap-toggle-row" style="margin-bottom:0;">
-              <span class="ap-toggle-label" data-i18n="use_dhcp">Utiliser DHCP</span>
-              <label class="toggle-switch">
-                <input type="checkbox" id="ethDhcp">
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            <p class="info-box" style="margin-top:8px;margin-bottom:0;font-size:11px;" data-i18n="dhcp_info">Activé : IP assignée automatiquement. Désactivé : utiliser les champs ci-dessous.</p>
-          </div>
-          <div class="form-group">
-            <label data-i18n="hostname">Hostname</label>
-            <input id="hostname" placeholder="esp32-relay-osc">
-          </div>
+        <!-- Toggle DHCP pleine largeur -->
+        <div class="ap-toggle-row" style="margin-bottom:8px;">
+          <span class="ap-toggle-label" data-i18n="use_dhcp">Utiliser DHCP</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="ethDhcp">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+        <p class="info-box" style="margin-bottom:14px;font-size:11px;" data-i18n="dhcp_info">Activé : IP assignée automatiquement. Désactivé : utiliser les champs ci-dessous.</p>
+
+        <!-- Hostname pleine largeur -->
+        <div class="form-group" style="margin-bottom:14px;">
+          <label data-i18n="hostname">Nom d'hôte (Hostname)</label>
+          <input id="hostname" placeholder="esp32-relay-osc">
         </div>
 
         <!-- Champs IP statiques -->
