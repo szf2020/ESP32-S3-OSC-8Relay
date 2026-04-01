@@ -4,7 +4,22 @@ Toutes les évolutions notables du projet sont documentées ici.
 
 ---
 
-## [v1.2.7] — Avril 2026 — Unreleased
+## [v1.2.8] — Avril 2026
+
+### Améliorations UI
+- Onglet **Relais & OSC** : Port d'écoute OSC (UDP) déplacé **avant** la section des adresses des relais
+- Section "Configuration OSC par Relais" renommée en **"Adresses OSC des Relais"** (FR/EN/ES/DE/ZH)
+- Nouvelle card **"Paramètres OSC disponibles"** : tableau de référence de toutes les adresses OSC acceptées (`/relay/N`, `/relay/all`, `/ap`, `/reboot`) avec type, valeurs et description
+- Onglet **Réseau** : refonte de la section Ethernet W5500 — DHCP devient un toggle switch cohérent avec l'AP, sous-titre "Configuration IP statique", labels DNS 1/DNS 2 traduits
+- Toutes les traductions revues et complétées (FR, EN, ES, DE, ZH) : nouvelles clés `dns1_label`, `dns2_label`, `static_ip_section`, `osc_params_title`, `osc_col_*`, `osc_desc_*`, `osc_custom_note`, `osc_port_label`
+
+### Corrections
+- **fix: crash watchdog DHCP timeout** — `Ethernet.begin(mac)` limité à 6 s / 2 s (au lieu de 60 s par défaut) → évite le dépassement du watchdog de 10 s
+- **fix: fallback APIPA** 169.254.x.x/16 lorsque DHCP échoue (opérationnel après le fix watchdog)
+
+---
+
+## [v1.2.7] — Avril 2026
 
 ### Ajouté
 - Commande OSC `/factory-reset` : efface la configuration NVS (reset usine) et redémarre l'ESP32
