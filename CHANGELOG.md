@@ -4,6 +4,19 @@ Toutes les évolutions notables du projet sont documentées ici.
 
 ---
 
+## [v1.2.6] — Avril 2026
+
+### Améliorations UI
+- Changelog de l'onglet Système synchronisé avec GitHub Releases (fetch navigateur)
+- Fallback automatique sur le CHANGELOG.md embarqué dans le firmware si hors ligne
+- Lien direct vers la page GitHub Releases depuis l'UI
+
+### Build
+- Script pre-build `scripts/embed_changelog.py` : génère `include/changelog_data.h` depuis `CHANGELOG.md` à chaque compilation
+- Endpoint `GET /api/changelog` : sert le CHANGELOG embarqué en PROGMEM
+
+---
+
 ## [v1.2.5] — Avril 2026
 
 ### Améliorations UI

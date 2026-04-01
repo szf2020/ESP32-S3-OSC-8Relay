@@ -9,6 +9,7 @@
 #include "pca9554.h"
 #include "osc_router.h"
 #include "web_ui.h"
+#include "changelog_data.h"
 #include "logger.h"
 #include "watchdog.h"
 #include "mutex.h"
@@ -594,6 +595,11 @@ void setupWebServer() {
     len += snprintf(buf + len, sizeof(buf) - len, "]}");
 
     gWeb.send(200, "application/json", buf);
+  });
+
+  // 📝 API: GET /api/changelog - Contenu de CHANGELOG.md embarqué à la compilation
+  gWeb.on("/api/changelog", HTTP_GET, []() {
+    gWeb.send_P(200, "text/plain; charset=utf-8", CHANGELOG_DATA);
   });
 
   gWeb.begin();

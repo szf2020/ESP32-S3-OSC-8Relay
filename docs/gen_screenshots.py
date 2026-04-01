@@ -61,12 +61,18 @@ const fakeLive = {
   ]
 };
 
+const fakeChangelog = [
+  {tag_name:"v1.2.6",name:"Changelog lié aux GitHub Releases",html_url:"https://github.com/NeOdYmS/ESP32-S3-OSC-8Relay/releases/tag/v1.2.6",published_at:"2026-04-01T00:00:00Z",body:"### Améliorations UI\n- Changelog synchronisé avec GitHub Releases\n- Fallback firmware embarqué si hors ligne"},
+  {tag_name:"v1.2.5",name:"Drapeaux langue + portail captif dynamique",html_url:"https://github.com/NeOdYmS/ESP32-S3-OSC-8Relay/releases/tag/v1.2.5",published_at:"2026-04-01T00:00:00Z",body:"### Améliorations UI\n- Sélecteur langue remplacé par boutons drapeaux 🇫🇷🇬🇧🇪🇸🇩🇪🇨🇳\n- Portail captif : redirections dynamiques\n### Robustesse API\n- Validation JSON sur tous les endpoints POST"}
+];
 const origFetch = window.fetch;
 window.fetch = async function(url, opts) {
   if (typeof url === 'string') {
     if (url.includes('/api/live')) return new Response(JSON.stringify(fakeLive), {status: 200});
     if (url.includes('/api/config')) return new Response(JSON.stringify(fakeConfig), {status: 200});
     if (url.includes('/api/relays/')) return new Response('{}', {status: 200});
+    if (url.includes('api.github.com') && url.includes('releases')) return new Response(JSON.stringify(fakeChangelog), {status: 200});
+    if (url.includes('/api/changelog')) return new Response('fallback local', {status: 200});
   }
   return origFetch(url, opts);
 };
