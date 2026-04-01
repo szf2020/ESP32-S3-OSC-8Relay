@@ -456,6 +456,30 @@ void setupWebServer() {
     LOG_WARN("WEB", "Network reload (reboot scheduled)");
   });
 
+  // 📡 API: POST /api/ap/toggle - Activer ou désactiver l'AP immédiatement
+  gWeb.on("/api/ap/toggle", HTTP_POST, []() {
+    String body = gWeb.arg("plain");
+    StaticJsonDocument<64> doc;
+    if (deserializeJson(doc, body) || !doc.containsKey("active")) {
+      gWeb.send(400, "text/plain", "Invalid JSON");
+      return;
+    }
+    bool wanted = doc["active"].as<bool>();
+    gCfg.wifiApAllowed = wanted;
+    gStore.save(gCfg);
+    gWeb.send(200, "text/plain", "OK");
+    if (wanted && !NETMGR.isWiFiAPActive()) {
+      gApForcedOff = false;
+      gApReloadPending = true;
+      gApReloadTime = millis();
+    } else if (!wanted && NETMGR.isWiFiAPActive()) {
+      gApForcedOff = true;
+      gApReloadPending = false;
+      NETMGR.stopWiFiAP();
+    }
+    LOG_INFO("WEB", "AP toggled: %s", wanted ? "ON" : "OFF");
+  });
+
   // 📡 API: POST /api/config/ap - Sauvegarder config WiFi AP
   gWeb.on("/api/config/ap", HTTP_POST, []() {
     String body = gWeb.arg("plain");
@@ -470,8 +494,8 @@ void setupWebServer() {
     strlcpy(gCfg.apSsid, doc["apSsid"], sizeof(gCfg.apSsid));
     strlcpy(gCfg.apPass, doc["apPass"], sizeof(gCfg.apPass));
     gCfg.apIp.fromString(doc["apIp"].as<String>());
-    gCfg.apMask.fromString(doc["apMask"].as<String>());
-    gCfg.apGw = gCfg.apIp;  // La passerelle AP = IP de l'ESP (toujours)
+    gCfg.apMask = IPAddress(255,255,255,0);  // masque fixe
+    gCfg.apGw = gCfg.apIp;
     gCfg.apTimeoutMin = doc["apTimeoutMin"] | 5;
 
     gStore.save(gCfg);
