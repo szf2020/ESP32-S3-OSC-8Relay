@@ -50,6 +50,8 @@ public:
   bool load(AppCfg& out);
   bool save(const AppCfg& in);
   void factoryReset();
+  // Retourne true si un factory reset a été effectué (nouveau firmware détecté)
+  bool checkFirmwareBuild(const char* buildStamp);
   
   // Relay state persistence
   bool loadRelayStates(bool out[8]);

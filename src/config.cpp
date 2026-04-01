@@ -151,6 +151,19 @@ void ConfigStore::factoryReset() {
   prefs.clear();
 }
 
+bool ConfigStore::checkFirmwareBuild(const char* buildStamp) {
+  if (!begin()) return false;
+  char stored[32] = {};
+  prefs.getString("fwbuild", stored, sizeof(stored));
+  if (strcmp(stored, buildStamp) != 0) {
+    // Nouveau firmware : effacer la config et stocker le nouveau stamp
+    prefs.clear();
+    prefs.putString("fwbuild", buildStamp);
+    return true;  // factory reset effectué
+  }
+  return false;
+}
+
 bool ConfigStore::loadRelayStates(bool out[8]) {
   if (!begin()) return false;
   

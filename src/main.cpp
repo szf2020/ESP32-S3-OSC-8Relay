@@ -678,10 +678,19 @@ void setup() {
   }
   WATCHDOG.feed();
 
-  // 🎯 STEP 4: Charger la configuration depuis NVS (stockage persistent)
-  LOG_INFO("CFG", "Loading configuration from NVS...");
+  // 🎯 STEP 4: Vérifier si le firmware a changé → factory reset automatique
   gStore.begin();
   Serial.println("[MAIN] NVS begin done");
+  {
+    static const char BUILD_STAMP[] = __DATE__ " " __TIME__;
+    if (gStore.checkFirmwareBuild(BUILD_STAMP)) {
+      LOG_WARN("CFG", "🆕 New firmware detected (%s) — factory reset applied", BUILD_STAMP);
+      Serial.printf("[MAIN] New firmware: factory reset done\n");
+    }
+  }
+
+  // Charger la configuration depuis NVS (stockage persistent)
+  LOG_INFO("CFG", "Loading configuration from NVS...");
   if (!gStore.load(gCfg)) {
     LOG_WARN("CFG", "Loading defaults configuration");
     gCfg = ConfigStore::defaults();
