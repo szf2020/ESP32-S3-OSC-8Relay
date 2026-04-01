@@ -71,7 +71,6 @@ Décomposition de la latence totale :
 |---|---|
 | **Ethernet SPI (W5500)** | CS=16, SCK=15, MISO=14, MOSI=13, INT=12 |
 | **I2C (PCA9554)** | SDA=42, SCL=41, Adresse=0x20 |
-| **DI8 (WiFi trigger)** | GPIO11 (actif LOW) |
 | **LED RGB** | GPIO38 (WS2812) |
 | **Buzzer** | GPIO46 |
 

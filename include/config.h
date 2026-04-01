@@ -29,7 +29,7 @@ struct AppCfg {
   // Ethernet config (W5500)
   NetCfg eth;
 
-  // WiFi AP settings (AP is enabled only when DI8 is active at boot, or via UI)
+  // WiFi AP settings
   bool wifiApAllowed;          // "master enable" from UI
   char apSsid[32];
   char apPass[64];

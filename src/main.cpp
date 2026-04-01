@@ -19,10 +19,9 @@
 // ========== HARDWARE PINOUT ==========
 // Ethernet (W5500 SPI): SCK=15, MISO=14, MOSI=13, CS=16, INT=12, RST=-1
 // I2C (PCA9554 + RTC): SDA=42, SCL=41
-// DI8 = GPIO11 (active when LOW = pulled to ground by optocoupler)
 // RGB LED = GPIO38, Buzzer = GPIO46
 
-static constexpr int PIN_DI8_WIFI = 11;
+
 static constexpr int PIN_RGB = 38;
 static constexpr int PIN_BUZZER = 46;
 
@@ -694,15 +693,13 @@ void setup() {
   WATCHDOG.feed();
 
   // 🎯 STEP 5: Configurer les GPIO
-  pinMode(PIN_DI8_WIFI, INPUT_PULLUP);
   // RGB pilotée par WS2812 (pas besoin de OUTPUT ici)
   pinMode(PIN_BUZZER, OUTPUT);
   
   // Initialiser tous les relais à OFF
   updateAllPhysicalRelays();
-  LedStatus::booting(); // � Bleu = démarrage
-  LOG_INFO("HW", "GPIO configured: DI8=%d, RGB=%d, Buzzer=%d", 
-    PIN_DI8_WIFI, PIN_RGB, PIN_BUZZER);
+  LedStatus::booting(); // Bleu = démarrage
+  LOG_INFO("HW", "GPIO configured: RGB=%d, Buzzer=%d", PIN_RGB, PIN_BUZZER);
 
   // 🎯 STEP 6: Initialiser le réseau (Ethernet W5500) + démarrer l'AP WiFi pour l'interface web
   LOG_INFO("NET", "Starting network initialization...");
