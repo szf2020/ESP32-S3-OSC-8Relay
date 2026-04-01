@@ -414,7 +414,9 @@ En cas d'erreur critique (PCA9554 non trouvé) : **LED rouge** permanente.
 
 ## 📜 Licence
 
-Ce projet est fourni tel quel, sans garantie. Usage libre pour projets personnels et professionnels.
+Ce projet est publié sous licence **[MIT](LICENSE)** — utilisation libre, y compris commerciale, avec conservation de la notice de copyright.
+
+> **Vibe coding** — Ce firmware a été conçu et dirigé par un humain, co-écrit avec l'assistance de l'IA (GitHub Copilot / Claude). L'architecture, les choix techniques et les décisions de conception restent l'œuvre de son auteur.
 
 ---
 
@@ -425,3 +427,4 @@ Ce projet est fourni tel quel, sans garantie. Usage libre pour projets personnel
 - **ArduinoJson** par Benoît Blanchon
 - **Adafruit NeoPixel** par Adafruit Industries
 - **qrcode-generator** v1.4.4 par Kazuhiko Arase (MIT License)
+- **GitHub Copilot / Claude** — co-écriture assistée par IA (vibe coding)
